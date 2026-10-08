@@ -1,0 +1,51 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --brand-primary: 22 163 74; /* #16a34a (green-600) as RGB for opacity usage */
+    --brand-secondary: 29 78 216; /* #1d4ed8 (blue-700) */
+    --background: 250 250 250; /* neutral-50 */
+    --foreground: 23 23 23; /* neutral-900 */
+    
+    --radius: 0.75rem;
+  }
+
+  body {
+    @apply bg-[rgb(var(--background))] text-[rgb(var(--foreground))] antialiased min-h-screen;
+  }
+}
+
+@layer utilities {
+  .focus-ring {
+    @apply outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[rgb(var(--brand-primary))] focus-visible:ring-offset-[rgb(var(--background))] transition-shadow;
+  }
+  
+  .glass-card {
+    @apply bg-white/70 backdrop-blur-md border border-white/40 shadow-[0_8px_30px_rgb(0,0,0,0.04)];
+  }
+
+  .premium-shadow {
+    @apply shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1),_0_4px_25px_-5px_rgba(6,81,237,0.05)];
+  }
+
+  .preserve-3d {
+    transform-style: preserve-3d;
+  }
+
+  .backface-hidden {
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
+  .rotate-y-180 {
+    transform: rotateY(180deg);
+  }
+
+  @media print {
+    .print\:unflip {
+      transform: none !important;
+    }
+  }
+}
