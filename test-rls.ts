@@ -46,7 +46,8 @@ async function runTests() {
     p_slug: `org-a-${timestamp}`,
     p_country: 'France',
     p_city: 'Paris',
-    p_phone: '0123456789'
+    p_phone: '0123456789',
+    p_member_prefix: 'OA'
   });
   if (errOrgA) {
     console.error('FAIL: Could not create Org A', errOrgA);
@@ -78,7 +79,8 @@ async function runTests() {
     p_slug: `org-b-${timestamp}`,
     p_country: 'Belgium',
     p_city: 'Brussels',
-    p_phone: '0987654321'
+    p_phone: '0987654321',
+    p_member_prefix: 'OB'
   });
   if (errOrgB) {
     console.error('FAIL: Could not create Org B', errOrgB);
@@ -226,8 +228,48 @@ async function runTests() {
     console.log('\nPASS: Anonymous users can only access data via the RPC.\n');
   }
 
+  console.log(`7. Testing Course Isolation: Org A Course vs User B...`);
+  let courseLeak = false;
+
+  // Insert a course for Org A
+  const { data: courseA, error: errCourseA } = await supabaseA.from('courses').insert({
+    organization_id: orgA.id,
+    title: `Cours Privé Org A ${timestamp}`,
+    is_published: false
+  }).select().single();
+
+  if (errCourseA) {
+    console.log(`[courses] Note: Insert course A returned ${errCourseA.message} (schema status)`);
+  } else if (courseA) {
+    // User B tries to select draft course of Org A
+    const { data: bReadCourse, error: errBReadCourse } = await supabaseB.from('courses')
+      .select('*')
+      .eq('id', courseA.id);
+
+    if (bReadCourse && bReadCourse.length > 0) {
+      console.error(`FAIL: [courses] User B could read Org A DRAFT course! LEAK DETECTED.`);
+      courseLeak = true;
+    } else {
+      console.log(`[courses] Result: User B cannot read Org A draft course (Expected)`);
+    }
+
+    // User B tries to update Org A course
+    const { error: errBUpdateCourse } = await supabaseB.from('courses')
+      .update({ title: 'Hacked by B' })
+      .eq('id', courseA.id);
+
+    // Verify it wasn't updated
+    const { data: checkCourse } = await supabaseA.from('courses').select('title').eq('id', courseA.id).single();
+    if (checkCourse?.title === 'Hacked by B') {
+      console.error(`FAIL: [courses] User B updated Org A course!`);
+      courseLeak = true;
+    } else {
+      console.log(`[courses] Result: User B cannot update Org A course (Expected)`);
+    }
+  }
+
   console.log(`\n=== TEST SUITE COMPLETED ===`);
-  if (hasLeak || rpcFail || anonDirectFail || anonRpcFail) {
+  if (hasLeak || rpcFail || anonDirectFail || anonRpcFail || courseLeak) {
     console.error('OVERALL RESULT: FAIL (See above for details)');
   } else {
     console.log('OVERALL RESULT: PASS (All data isolated correctly)');

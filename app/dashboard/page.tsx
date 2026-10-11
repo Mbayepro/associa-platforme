@@ -34,7 +34,23 @@ export default async function DashboardPage() {
     .eq('status', 'ACTIVE')
     .eq('members.organization_id', orgId);
 
-  const { count: actionsCount } = await (supabase.from('actions') as any)
+  const { count: actionsCount } = await supabase
+    .from('actions')
+    .select('*', { count: 'exact', head: true })
+    .eq('organization_id', orgId);
+
+  const { count: trainingsCount } = await supabase
+    .from('trainings')
+    .select('*', { count: 'exact', head: true })
+    .eq('organization_id', orgId);
+
+  const { count: eventsCount } = await supabase
+    .from('events')
+    .select('*', { count: 'exact', head: true })
+    .eq('organization_id', orgId);
+
+  const { count: certificatesCount } = await supabase
+    .from('certificates')
     .select('*', { count: 'exact', head: true })
     .eq('organization_id', orgId);
 
@@ -81,9 +97,9 @@ export default async function DashboardPage() {
         <AnimatedKPICard label="Membres" value={memberCount ?? 0} icon={<Users className="h-5 w-5" />} href="/dashboard/members" color="bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400" />
         <AnimatedKPICard label="Cartes actives" value={activeCardCount ?? 0} icon={<IdCard className="h-5 w-5" />} href="/dashboard/cards" color="bg-green-50 text-green-600 dark:bg-green-900/30 dark:text-green-400" />
         <AnimatedKPICard label="Actions" value={actionsCount ?? 0} icon={<Briefcase className="h-5 w-5" />} href="/dashboard/actions" color="bg-purple-50 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400" />
-        <AnimatedKPICard label="Formations" value="—" icon={<GraduationCap className="h-5 w-5" />} href="/dashboard/courses" color="bg-orange-50 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400" />
-        <AnimatedKPICard label="Événements" value="—" icon={<Calendar className="h-5 w-5" />} href="/dashboard/events" color="bg-pink-50 text-pink-600 dark:bg-pink-900/30 dark:text-pink-400" />
-        <AnimatedKPICard label="Attestations" value="—" icon={<FileBadge className="h-5 w-5" />} href="/dashboard/certificates" color="bg-teal-50 text-teal-600 dark:bg-teal-900/30 dark:text-teal-400" />
+        <AnimatedKPICard label="Formations" value={trainingsCount ?? 0} icon={<GraduationCap className="h-5 w-5" />} href="/dashboard/courses" color="bg-orange-50 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400" />
+        <AnimatedKPICard label="Événements" value={eventsCount ?? 0} icon={<Calendar className="h-5 w-5" />} href="/dashboard/events" color="bg-pink-50 text-pink-600 dark:bg-pink-900/30 dark:text-pink-400" />
+        <AnimatedKPICard label="Attestations" value={certificatesCount ?? 0} icon={<FileBadge className="h-5 w-5" />} href="/dashboard/certificates" color="bg-teal-50 text-teal-600 dark:bg-teal-900/30 dark:text-teal-400" />
       </AnimatedKPIGrid>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

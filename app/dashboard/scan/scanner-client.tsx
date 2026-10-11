@@ -4,6 +4,9 @@ import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import jsQR from 'jsqr';
 import { createClient } from '@/lib/supabase/client';
+import { Calendar, GraduationCap, ArrowRight, ScanLine } from 'lucide-react';
+
+type Session = { id: string; title: string };
 
 type ScanResult = {
   success: boolean;
@@ -18,10 +21,21 @@ function extractToken(raw: string): string {
   return parts.length > 1 ? parts[1].replace(/\/$/, '') : trimmed;
 }
 
-export function ScannerClient() {
+export function ScannerClient({ 
+  availableTrainings = [], 
+  availableEvents = [] 
+}: { 
+  availableTrainings?: Session[], 
+  availableEvents?: Session[] 
+}) {
   const searchParams = useSearchParams();
-  const sessionType = (searchParams.get('type') as 'FORMATION' | 'EVENT') || null;
-  const sessionId = searchParams.get('id');
+  const router = useRouter();
+  
+  const urlSessionType = (searchParams.get('type') as 'FORMATION' | 'EVENT') || null;
+  const urlSessionId = searchParams.get('id');
+
+  const [sessionType, setSessionType] = useState<'FORMATION' | 'EVENT' | null>(urlSessionType);
+  const [sessionId, setSessionId] = useState<string | null>(urlSessionId);
 
   const supabase = createClient();
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -120,20 +134,106 @@ export function ScannerClient() {
 
   if (!sessionType || !sessionId) {
     return (
-      <div className="rounded-xl border border-dashed border-neutral-300 p-8 text-center text-sm text-neutral-600">
-        Ouvrez le scanner depuis la fiche d&apos;une formation ou d&apos;un
-        événement pour enregistrer les présences.
+      <div className="max-w-2xl mx-auto space-y-6">
+        <div className="text-center space-y-2 mb-8">
+          <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-primary/10 text-brand-primary mb-4">
+            <ScanLine className="h-8 w-8" />
+          </div>
+          <h2 className="text-2xl font-bold text-neutral-900">Que voulez-vous scanner ?</h2>
+          <p className="text-neutral-500">Sélectionnez la session en cours pour commencer à enregistrer les présences.</p>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-6">
+          {/* Formations */}
+          <div className="bg-white rounded-2xl border border-neutral-200 p-6 shadow-sm">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-orange-100 text-orange-600 rounded-lg">
+                <GraduationCap className="h-5 w-5" />
+              </div>
+              <h3 className="font-bold text-neutral-900 text-lg">Formations</h3>
+            </div>
+            
+            {availableTrainings.length === 0 ? (
+              <p className="text-sm text-neutral-500 italic">Aucune formation publiée.</p>
+            ) : (
+              <div className="space-y-2">
+                {availableTrainings.map(t => (
+                  <button
+                    key={t.id}
+                    onClick={() => {
+                      setSessionType('FORMATION');
+                      setSessionId(t.id);
+                    }}
+                    className="w-full flex items-center justify-between p-3 rounded-xl border border-neutral-200 hover:border-brand-primary hover:bg-brand-primary/5 transition-colors text-left group"
+                  >
+                    <span className="text-sm font-medium text-neutral-700 group-hover:text-brand-primary line-clamp-1">{t.title}</span>
+                    <ArrowRight className="h-4 w-4 text-neutral-400 group-hover:text-brand-primary shrink-0" />
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Événements */}
+          <div className="bg-white rounded-2xl border border-neutral-200 p-6 shadow-sm">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-pink-100 text-pink-600 rounded-lg">
+                <Calendar className="h-5 w-5" />
+              </div>
+              <h3 className="font-bold text-neutral-900 text-lg">Événements</h3>
+            </div>
+            
+            {availableEvents.length === 0 ? (
+              <p className="text-sm text-neutral-500 italic">Aucun événement publié.</p>
+            ) : (
+              <div className="space-y-2">
+                {availableEvents.map(e => (
+                  <button
+                    key={e.id}
+                    onClick={() => {
+                      setSessionType('EVENT');
+                      setSessionId(e.id);
+                    }}
+                    className="w-full flex items-center justify-between p-3 rounded-xl border border-neutral-200 hover:border-brand-primary hover:bg-brand-primary/5 transition-colors text-left group"
+                  >
+                    <span className="text-sm font-medium text-neutral-700 group-hover:text-brand-primary line-clamp-1">{e.title}</span>
+                    <ArrowRight className="h-4 w-4 text-neutral-400 group-hover:text-brand-primary shrink-0" />
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     );
   }
 
+  const currentSessionTitle = sessionType === 'FORMATION' 
+    ? availableTrainings.find(t => t.id === sessionId)?.title 
+    : availableEvents.find(e => e.id === sessionId)?.title;
+
   return (
     <div className="max-w-md space-y-4">
-      <div>
-        <h1 className="text-xl font-semibold">Scanner de présence</h1>
-        <p className="text-sm text-neutral-600">
-          Session : {sessionType === 'FORMATION' ? 'Formation' : 'Événement'}
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-semibold">Scanner de présence</h1>
+          <p className="text-sm text-neutral-600 font-medium mt-1">
+            <span className={sessionType === 'FORMATION' ? 'text-orange-600' : 'text-pink-600'}>
+              {sessionType === 'FORMATION' ? 'Formation' : 'Événement'}
+            </span>
+            {currentSessionTitle && <span className="text-neutral-400"> • {currentSessionTitle}</span>}
+          </p>
+        </div>
+        <button 
+          onClick={() => {
+            stopCamera();
+            setSessionType(null);
+            setSessionId(null);
+          }}
+          className="text-xs font-semibold text-neutral-500 hover:text-neutral-900 border border-neutral-200 rounded-lg px-3 py-1.5"
+        >
+          Changer
+        </button>
       </div>
 
       <div className="overflow-hidden rounded-xl border border-neutral-200 bg-black">

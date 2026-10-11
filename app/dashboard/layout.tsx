@@ -57,7 +57,7 @@ export default async function DashboardLayout({
     >
       <Sidebar orgName={org?.name} role={role} />
       <main className="flex-1 p-4 sm:p-8 print:p-0">{children}</main>
-      <MobileNav />
+      <MobileNav role={role} />
     </div>
   );
 }
