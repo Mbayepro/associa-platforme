@@ -18,16 +18,44 @@ export function PrintableCertificate({
         @media print {
           @page {
             size: A4 landscape;
-            margin: 0;
+            margin: 0 !important;
           }
-          body * { visibility: hidden; }
-          #cert-print, #cert-print * { visibility: visible; }
+          html, body {
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 297mm !important;
+            height: 210mm !important;
+            overflow: hidden !important;
+            background: white !important;
+          }
+          body * {
+            visibility: hidden !important;
+          }
+          #cert-print, #cert-print * {
+            visibility: visible !important;
+          }
           #cert-print {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 297mm !important;
+            height: 210mm !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            page-break-after: avoid !important;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+          }
+          .cert-wrapper-print {
+            width: 297mm !important;
+            height: 210mm !important;
+            box-shadow: none !important;
+            margin: 0 !important;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
           }
         }
       `}</style>

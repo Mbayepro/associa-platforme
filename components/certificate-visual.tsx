@@ -32,7 +32,9 @@ export function CertificateVisual({
   const A4_WIDTH = 1123;
   const A4_HEIGHT = 794;
 
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 
+    (typeof window !== 'undefined' && window.location.origin ? window.location.origin : 
+    (process.env.NEXT_PUBLIC_VERCEL_URL ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}` : 'https://associa-platforme.vercel.app'));
   const verifyUrl = verificationToken ? `${baseUrl}/verify/certificate/${verificationToken}` : baseUrl;
   
   const formattedDate = new Date(issuedAt).toLocaleDateString('fr-FR', {

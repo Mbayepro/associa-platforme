@@ -24,7 +24,7 @@ export default async function CertificateDetailPage({
 
   if (!cert) notFound();
 
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || (process.env.NEXT_PUBLIC_VERCEL_URL ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}` : 'http://localhost:3000');
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || (process.env.NEXT_PUBLIC_VERCEL_URL ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}` : 'https://associa-platforme.vercel.app');
   const verificationUrl = `${baseUrl}/verify/certificate/${cert.verification_token}`;
 
   const TYPE_LABELS: Record<string, string> = {
