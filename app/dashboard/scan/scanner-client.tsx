@@ -29,7 +29,6 @@ export function ScannerClient({
   availableEvents?: Session[] 
 }) {
   const searchParams = useSearchParams();
-  const router = useRouter();
   
   const urlSessionType = (searchParams.get('type') as 'FORMATION' | 'EVENT') || null;
   const urlSessionId = searchParams.get('id');
